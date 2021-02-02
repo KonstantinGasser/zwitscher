@@ -48,11 +48,11 @@ public class StreamingJob {
 	public static void main(String[] args) throws Exception {
 		ParameterTool parameterTool = ParameterTool.fromArgs(args);
 
-		final String jobName = parameterTool.get("job-name", "feature_aggregation_job");
+		final String jobName = parameterTool.get("job-name", "tweet_filter_job");
 		final String inputTopic = parameterTool.get("input-topic", "tweets");
 		final String outputTopic = parameterTool.get("output-topic", "clean_tweets");
 		final String consumerGroup = parameterTool.get("group-id", "zwitscher");
-		final String kafkaAddress = parameterTool.get("kafka-address", "localhost:9092");
+		final String kafkaAddress = parameterTool.get("kafka-address", "kafka:29092");
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 
