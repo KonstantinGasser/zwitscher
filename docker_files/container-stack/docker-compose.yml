@@ -68,3 +68,33 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: root
     ports:
       - 27017:27017
+
+  jobmanager:
+    build: ./flink-jobs
+    container_name: jobmanager
+    hostname: jobmanager
+    expose:
+      - 6123
+    ports:
+      - 8081:8081
+    command: /bin/sh -c '/docker-entrypoint.sh jobmanager
+                        & /opt/flink/bin/flink run /opt/flink/tweetfilter-0.1.jar'
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    depends_on:
+      - kafka
+
+  taskmanager:
+    build: ./flink-jobs
+    container_name: taskmanager
+    hostname: taskmanager
+    expose:
+      - 6121
+      - 6122
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager

@@ -76,7 +76,8 @@ public class StreamingJob {
 		// filter tweets by bad words and add random ids
 		DataStream<ObjectNode> filteredStream = jsonStream
 				.map(value -> {
-					String content = value.get("content").textValue();
+
+					String content = value.get("payload").get("content").textValue();
 					if (ProfanityFilter.containsProfanity(content)) {
 						value.put("content", "[censored]");
 					}
