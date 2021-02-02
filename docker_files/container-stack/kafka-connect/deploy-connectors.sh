@@ -1,3 +1,4 @@
+sleep 1m
 
 curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
         "name": "tweet_data_source",
@@ -42,3 +43,21 @@ curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json
                 "topic": "follows"
                 }
         }'
+
+curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
+       "name":"mongo-tweet-writer",
+       "config" :{
+               "connector.class":"com.mongodb.kafka.connect.MongoSinkConnector",
+               "tasks.max":"5",
+               "database":"testdb",
+               "collection":"testcollection",
+               "write.batch.enabled":"false",
+               "connect.use_schema":"false",
+               "topics":"testTopic",
+	             "connection.uri":"mongodb://root:root@mongo:27017/",
+               "key.converter":"org.apache.kafka.connect.json.JsonConverter",
+               "key.converter.schemas.enable":"false",
+               "value.converter":"org.apache.kafka.connect.json.JsonConverter",
+               "value.converter.schemas.enable":"false"
+       }
+}'

@@ -22,7 +22,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_OPTS: -javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/prom-jmx-agent-config.yml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -31,7 +30,7 @@ services:
       - zookeeper
 
   kafka-connect:
-    build: ./docker-images/kafka-connect
+    build: ./kafka-connect
     container_name: kafka-connect
     hostname: kafka-connect
     command: /bin/sh -c '/deploy-connectors.sh & /etc/confluent/docker/run'
@@ -55,9 +54,17 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
     depends_on:
       - kafka
-      - postgres
       - zookeeper
     volumes:
       - ./data:/home/data
     ports:
       - 8083:8083
+  mongo:
+    image: mongo
+    restart: always
+    hostname: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
