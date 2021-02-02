@@ -85,7 +85,7 @@ public class StreamingJob {
 				    try {
 						value.get("user_id").intValue();
 					} catch (Exception e) {
-				    	value.put("user_id", java.org.bdea.zwitscher.RandomId.get());
+				    	value.put("user_id", RandomId.get());
 					}
 				    return value;
 				});

@@ -1,4 +1,4 @@
-package java.org.bdea.zwitscher;
+package org.bdea.zwitscher;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
