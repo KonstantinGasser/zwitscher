@@ -49,9 +49,9 @@ public class StreamingJob {
 		ParameterTool parameterTool = ParameterTool.fromArgs(args);
 
 		final String jobName = parameterTool.get("job-name", "feature_aggregation_job");
-		final String inputTopic = parameterTool.get("input-topic", "transaction_data");
-		final String outputTopic = parameterTool.get("output-topic", "lstm_input");
-		final String consumerGroup = parameterTool.get("group-id", "lstm");
+		final String inputTopic = parameterTool.get("input-topic", "tweets");
+		final String outputTopic = parameterTool.get("output-topic", "clean_tweets");
+		final String consumerGroup = parameterTool.get("group-id", "zwitscher");
 		final String kafkaAddress = parameterTool.get("kafka-address", "localhost:9092");
 
 		final ObjectMapper objectMapper = new ObjectMapper();
