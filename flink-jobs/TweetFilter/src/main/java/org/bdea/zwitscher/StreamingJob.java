@@ -73,14 +73,22 @@ public class StreamingJob {
 		DataStream<ObjectNode> jsonStream = dataStream
 				.map((MapFunction<String, ObjectNode>) value -> (ObjectNode) objectMapper.readTree(value));
 
-		// filter tweets by bad words etc
-		DataStream<ObjectNode> filteredStream = jsonStream.map(value -> {
-			String content = value.get("content").textValue();
-			if (ProfanityFilter.containsProfanity(content)) {
-				value.put("content", "[censored]");
-			}
-			return value;
-		});
+		// filter tweets by bad words and add random ids
+		DataStream<ObjectNode> filteredStream = jsonStream
+				.map(value -> {
+					String content = value.get("content").textValue();
+					if (ProfanityFilter.containsProfanity(content)) {
+						value.put("content", "[censored]");
+					}
+					return value;
+				}).map(value -> {
+				    try {
+						value.get("user_id").intValue();
+					} catch (Exception e) {
+				    	value.put("user_id", java.org.bdea.zwitscher.RandomId.get());
+					}
+				    return value;
+				});
 
 		// serialize
 		DataStream<String> outputStream = filteredStream.map(value -> objectMapper.writeValueAsString(value));
