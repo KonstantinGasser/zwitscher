@@ -61,3 +61,24 @@ curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json
                "value.converter.schemas.enable":"false"
        }
 }'
+
+
+curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
+      "name": "Neo4jSinkConnector",
+      "config": {
+              "topics": "follows",
+              "connector.class": "streams.kafka.connect.sink.Neo4jSinkConnector",
+              "errors.retry.timeout": "-1",
+              "errors.retry.delay.max.ms": "1000",
+              "errors.tolerance": "all",
+              "errors.log.enable": true,
+              "errors.deadletterqueue.topic.name": "follower_deadletterqueue",
+              "errors.deadletterqueue.topic.replication.factor": "1",
+              "errors.log.include.messages": true,
+              "neo4j.server.uri": "bolt://neo4j:7687",
+              "neo4j.authentication.basic.username": "neo4j",
+              "neo4j.authentication.basic.password": "sink",
+              "neo4j.encryption.enabled": false,
+              "neo4j.topic.cypher.follows": "MERGE (x:User{id: event.follow_from}) MERGE (y:User{id: event.follow_to}) MERGE (x)-[:FOLLOWS]->(y)"
+      }
+}'

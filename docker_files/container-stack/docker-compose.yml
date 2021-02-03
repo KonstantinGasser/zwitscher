@@ -68,6 +68,28 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: root
     ports:
       - 27017:27017
+  neo4j:
+    image: neo4j
+    hostname: neo4j
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    depends_on:
+      - kafka
+      - kafka-connect
+    # volumes:
+    #   - ./neo4j/plugins:/plugins
+    environment:
+      NEO4J_kafka_zookeeper_connect: zookeeper:2181
+      NEO4J_kafka_bootstrap_servers: kafka:9092
+      NEO4J_AUTH: neo4j/sink
+      NEO4J_dbms_memory_heap_max__size: 5G
+    #   NEO4J_kafka_max_poll_records: 16384
+    #   NEO4J_streams_source_enabled: "false"
+    #   NEO4J_streams_sink_topic_cdc_schema: "neo4j"
+      NEO4J_dbms_logs_debug_level: DEBUG
+    #   NEO4J_streams_sink_enabled: "true"
 
   jobmanager:
     build: ./flink-jobs

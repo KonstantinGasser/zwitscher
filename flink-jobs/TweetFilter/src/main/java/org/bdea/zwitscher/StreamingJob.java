@@ -72,26 +72,30 @@ public class StreamingJob {
 
 		// parse json and assign a flink event-time timestamp to each element
 		DataStream<ObjectNode> jsonStream = dataStream
-				.map((MapFunction<String, ObjectNode>) value -> (ObjectNode) objectMapper.readTree(value));
+				.map((MapFunction<String, ObjectNode>) value -> (ObjectNode) objectMapper.readTree(value).get("payload"));
 
 		// filter tweets by bad words and add random ids
 		DataStream<ObjectNode> filteredStream = jsonStream
 				.map(value -> {
-
-					String content = value.get("payload").get("content").textValue();
-					System.out.println("Content: " + content + " BAD?: " + ProfanityFilter.containsProfanity(content));
+					String content = value.get("content").textValue();
+					ObjectNode objNode = new ObjectMapper().createObjectNode();
+					objNode.set("author", value.get("author"));
+					objNode.set("number_of_likes", value.get("number_of_likes"));
+					objNode.set("number_of_shares", value.get("number_of_shares"));
 					if (ProfanityFilter.containsProfanity(content)) {
-						
-						return ((ObjectNode) value.get("payload")).put("content", "[censored]");
+//						value.put("content", "[censored]");
+						objNode.put("content", "[censored]");
+						return objNode;
 					}
-					return (ObjectNode) value.get("payload");
+					objNode.put("content", value.get("content"));
+					return objNode;
 				}).map(value -> {
-				    try {
+					try {
 						value.get("user_id").intValue();
 					} catch (Exception e) {
-				    	return ((ObjectNode) value).put("user_id", RandomId.get());
+						value.put("user_id", RandomId.get());
 					}
-				    return value;
+					return value;
 				});
 
 		// serialize
