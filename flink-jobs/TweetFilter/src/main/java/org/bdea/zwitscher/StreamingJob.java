@@ -91,7 +91,7 @@ public class StreamingJob {
 					return objNode;
 				}).map(value -> {
 					try {
-						value.get("user_id").intValue();
+						value.get("user_id").textValue();
 					} catch (Exception e) {
 						value.put("user_id", RandomId.get());
 					}
