@@ -31,18 +31,6 @@ import org.apache.flink.streaming.connectors.kafka.internals.KeyedSerializationS
 
 import java.util.*;
 
-/**
- * Skeleton for a Flink Streaming Job.
- *
- * <p>For a tutorial how to write a Flink streaming application, check the
- * tutorials and examples on the <a href="https://flink.apache.org/docs/stable/">Flink Website</a>.
- *
- * <p>To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * <p>If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
- */
 public class StreamingJob {
 
 	public static void main(String[] args) throws Exception {
@@ -73,42 +61,27 @@ public class StreamingJob {
 		DataStream<ObjectNode> jsonStream = dataStream
 				.map((MapFunction<String, ObjectNode>) value -> (ObjectNode) objectMapper.readTree(value));
 
-		// filter tweets by bad words and add random ids
-		DataStream<ObjectNode> filteredStream = jsonStream
-				.map(value -> {
-					String content = value.get("content").textValue();
-					ObjectNode objNode = new ObjectMapper().createObjectNode();
-					objNode.set("author", value.get("author"));
-					objNode.set("number_of_likes", value.get("number_of_likes"));
-					objNode.set("number_of_shares", value.get("number_of_shares"));
-					if (ProfanityFilter.containsProfanity(content)) {
-//						value.put("content", "[censored]");
-						objNode.put("content", "[censored]");
-						return objNode;
-					}
-					objNode.put("content", value.get("content"));
-					return objNode;
-				}).map(value -> {
-					try {
-						value.get("user_id").intValue();
-					} catch (Exception e) {
-						value.put("user_id", RandomId.get());
-					}
-					return value;
-				});
+		jsonStream.map(value -> {
+			String id = value.get("user_id").textValue();
+			List<String> followers = Neo.getFollowers(id);
+			for (String f : followers) {
+				Memcached.updateTimeline(f, value.asText());
+			}
+			return value;
+		});
 
 		// serialize
-		DataStream<String> outputStream = filteredStream.map(value -> objectMapper.writeValueAsString(value));
+//		DataStream<String> outputStream = filteredStream.map(value -> objectMapper.writeValueAsString(value));
 
-		//create a new kafka producer
-		Properties producerProps = new Properties();
-		producerProps.setProperty("bootstrap.servers", kafkaAddress);
-		FlinkKafkaProducer<String> flinkKafkaProducer = new FlinkKafkaProducer<>(outputTopic,
-				new KeyedSerializationSchemaWrapper<>(new SimpleStringSchema()),
-				producerProps, FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
-
-		//add the producer to the dataStream as a sink
-		outputStream.addSink(flinkKafkaProducer);
+//		//create a new kafka producer
+//		Properties producerProps = new Properties();
+//		producerProps.setProperty("bootstrap.servers", kafkaAddress);
+//		FlinkKafkaProducer<String> flinkKafkaProducer = new FlinkKafkaProducer<>(outputTopic,
+//				new KeyedSerializationSchemaWrapper<>(new SimpleStringSchema()),
+//				producerProps, FlinkKafkaProducer.Semantic.AT_LEAST_ONCE);
+//
+//		//add the producer to the dataStream as a sink
+//		outputStream.addSink(flinkKafkaProducer);
 
 		// execute program
 		env.execute(jobName);
