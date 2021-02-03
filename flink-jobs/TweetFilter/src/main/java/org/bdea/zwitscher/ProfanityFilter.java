@@ -1,8 +1,6 @@
 package org.bdea.zwitscher;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class ProfanityFilter {
@@ -13,7 +11,11 @@ public class ProfanityFilter {
 
     private static void initialize() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("swearwords.txt"));
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+//          BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/ids.txt"));
+
+            InputStream is = cl.getResourceAsStream("swearwords.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String word = "";
             while ((word = reader.readLine()) != null) {
                 word = word.replaceAll(" ", "");
@@ -61,3 +63,5 @@ public class ProfanityFilter {
         return false;
     }
 }
+
+

@@ -46,6 +46,7 @@ import java.util.*;
 public class StreamingJob {
 
 	public static void main(String[] args) throws Exception {
+
 		ParameterTool parameterTool = ParameterTool.fromArgs(args);
 
 		final String jobName = parameterTool.get("job-name", "tweet_filter_job");
@@ -78,15 +79,17 @@ public class StreamingJob {
 				.map(value -> {
 
 					String content = value.get("payload").get("content").textValue();
+					System.out.println("Content: " + content + " BAD?: " + ProfanityFilter.containsProfanity(content));
 					if (ProfanityFilter.containsProfanity(content)) {
-						value.put("content", "[censored]");
+						
+						return ((ObjectNode) value.get("payload")).put("content", "[censored]");
 					}
-					return value;
+					return (ObjectNode) value.get("payload");
 				}).map(value -> {
 				    try {
 						value.get("user_id").intValue();
 					} catch (Exception e) {
-				    	value.put("user_id", RandomId.get());
+				    	return ((ObjectNode) value).put("user_id", RandomId.get());
 					}
 				    return value;
 				});
