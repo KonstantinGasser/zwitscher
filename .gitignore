@@ -8,3 +8,4 @@ out/
 **/dependency-reduced-pom.xml
 **/neo4j-volume/
 **/neostore.transaction.db.0
+**/node_modules

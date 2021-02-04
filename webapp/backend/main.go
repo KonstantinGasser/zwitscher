@@ -21,6 +21,9 @@ func main() {
 			producer: newProducer(),
 			msgChan:  producerMSG,
 		},
+		mongoC: &mongoClient{
+			driver: newMongoClient(),
+		},
 	}
 
 	go server.kafka.produce(producerMSG)

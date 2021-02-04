@@ -47,10 +47,10 @@ func (c *memClient) tweetList(item *memcache.Item) (*ResponseDashboard, error) {
 	return resp, nil
 }
 
-type itemTweet struct {
-	Author      string `json:"author"`
-	NumOfLikes  string `json:"number_of_likes"`
-	NumOfShares string `json:"number_of_shares"`
-	Content     string `json:"content"`
-	UserID      string `json:"user_id"`
-}
+// type itemTweet struct {
+// 	Author      string `json:"author"`
+// 	NumOfLikes  string `json:"number_of_likes"`
+// 	NumOfShares string `json:"number_of_shares"`
+// 	Content     string `json:"content"`
+// 	UserID      string `json:"user_id"`
+// }

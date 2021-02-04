@@ -11,6 +11,7 @@ type APIserver struct {
 	memcache *memClient
 	neo4j    *neoClient
 	kafka    *kafkaClient
+	mongoC   *mongoClient
 }
 
 func (srv *APIserver) setUp() {
@@ -18,6 +19,7 @@ func (srv *APIserver) setUp() {
 	http.HandleFunc("/getfollow", srv.getFollowFollow)
 	http.HandleFunc("/dash", srv.getDashboard)
 	http.HandleFunc("/zwitscherlos", srv.postTweet)
+	http.HandleFunc("/getmytweets", srv.getTweetsByID)
 }
 func (srv *APIserver) run() error {
 	return http.ListenAndServe(":7080", nil)
@@ -71,6 +73,44 @@ func (srv *APIserver) getDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func (srv *APIserver) getTweetsByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	userID := r.URL.Query().Get("user_id")
+	log.Printf("User id :%s\n", userID)
+	if userID == "" {
+		http.Error(w, `{"msg": "user_id not found in query", "status": 404}`, http.StatusBadRequest)
+		return
+	}
+
+	resp := ResponseTweetsByID{
+		Msg: "here you go",
+	}
+
+	payload, err := srv.mongoC.TweetsPerID(userID)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, `{"msg": "failed to query mongo", "status": 500}`, http.StatusInternalServerError)
+		return
+	}
+
+	resp.Data = payload
+	resp.Status = http.StatusOK
+	data, err := json.MarshalIndent(resp, "", "  ")
+	if err != nil {
+		http.Error(w, `{"msg": "failed to marshal response", "status": 500}`, http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+}
+
 func (srv *APIserver) postTweet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -90,6 +130,14 @@ func (srv *APIserver) postTweet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+type itemTweet struct {
+	Author      string `json:"author" bson:"author"`
+	NumOfLikes  string `json:"number_of_likes" bson:"number_of_likes"`
+	NumOfShares string `json:"number_of_shares" bson:"number_of_shares"`
+	Content     string `json:"content" bson:"content"`
+	UserID      string `json:"user_id" bson:"user_id"`
+}
+
 type ResponseDashboard struct {
 	Msg    string      `json:"msg"`
 	Status int         `json:"status"`
@@ -100,4 +148,10 @@ type ResponseFollowFollowers struct {
 	Msg    string                 `json:"msg"`
 	Status int                    `json:"status"`
 	Data   map[string]interface{} `json:"content"`
+}
+
+type ResponseTweetsByID struct {
+	Msg    string      `json:"msg"`
+	Status int         `json:"status"`
+	Data   []itemTweet `json:"content"`
 }

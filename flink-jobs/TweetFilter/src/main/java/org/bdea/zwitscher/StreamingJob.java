@@ -83,17 +83,20 @@ public class StreamingJob {
 					objNode.set("author", value.get("author"));
 					objNode.set("number_of_likes", value.get("number_of_likes"));
 					objNode.set("number_of_shares", value.get("number_of_shares"));
-					if (ProfanityFilter.containsProfanity(content)) {
-//						value.put("content", "[censored]");
-						objNode.put("content", "[censored]");
-						return objNode;
-					}
-					objNode.put("content", value.get("content"));
 					try {
-						objNode.put("user_id", value.get("user_id").textValue());
+						if (!value.get("user_id").isEmpty())
+							objNode.set("user_id", value.get("user_id"));
+						else
+							objNode.put("user_id", RandomId.get());
 					} catch (Exception e) {
 						objNode.put("user_id", RandomId.get());
 					}
+
+					if (ProfanityFilter.containsProfanity(content)) {
+						objNode.put("content", "[censored]");
+						return objNode;
+					}
+					objNode.set("content", value.get("content"));
 					return objNode;
 				});
 
