@@ -1,4 +1,4 @@
-# zwitscherer
+# zwitscher
 
 ## Project setup
 ```
