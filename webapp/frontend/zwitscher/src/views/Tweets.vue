@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="title is-1 mb-0 pt-5">Zwitscher</h1>
+    <h1 class="title is-1 mb-0 pt-5"><router-link style="color: #2c3e50" :to="'/'">Zwitscher</router-link></h1>
     <div id="nav" class="mt-0">
       <router-link :to="'/timeline/'+$route.params.id">Timeline</router-link> |
       <router-link :to="'/tweets/'+$route.params.id">Tweets</router-link> |
@@ -34,7 +34,7 @@ export default {
     axios
       .get("http://192.168.0.232:7080/tweets?user_id="+this.id)
       .then(response => this.tweets = response.data.content)
-      .catch(error => {console.log(error)});
+      .catch(error => console.log(error));
   }
 }
 </script>
