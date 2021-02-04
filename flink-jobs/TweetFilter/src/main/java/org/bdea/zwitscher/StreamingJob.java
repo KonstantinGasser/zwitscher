@@ -77,6 +77,7 @@ public class StreamingJob {
 		// filter tweets by bad words and add random ids
 		DataStream<ObjectNode> filteredStream = jsonStream
 				.map(value -> {
+					// System.out.println("CLEANER");
 					String content = value.get("content").textValue();
 					ObjectNode objNode = new ObjectMapper().createObjectNode();
 					objNode.set("author", value.get("author"));
@@ -91,7 +92,7 @@ public class StreamingJob {
 					return objNode;
 				}).map(value -> {
 					try {
-						value.get("user_id").intValue();
+						value.get("user_id").textValue();
 					} catch (Exception e) {
 						value.put("user_id", RandomId.get());
 					}

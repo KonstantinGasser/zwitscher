@@ -1,0 +1,136 @@
+version: '3.5'
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181
+
+  kafka:
+    image: confluentinc/cp-kafka
+    container_name: kafka
+    hostname: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9092:9092
+    depends_on:
+      - zookeeper
+
+  kafka-connect:
+    build: ./kafka-connect
+    container_name: kafka-connect
+    hostname: kafka-connect
+    command: /bin/sh -c '/deploy-connectors.sh & /etc/confluent/docker/run'
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_GROUP_ID: kafka-connect-group
+      CONNECT_REST_PORT: 8083
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+    depends_on:
+      - kafka
+      - zookeeper
+    volumes:
+      - ./data:/home/data
+    ports:
+      - 8083:8083
+  mongo:
+    image: mongo
+    restart: always
+    hostname: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+
+  neo4j:
+    image: neo4j
+    hostname: neo4j
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    depends_on:
+      - kafka
+      - kafka-connect
+    volumes:
+      - ./neo4j-volume:/data
+    #   - ./neo4j/plugins:/plugins
+    environment:
+      NEO4J_kafka_zookeeper_connect: zookeeper:2181
+      NEO4J_kafka_bootstrap_servers: kafka:9092
+      NEO4J_AUTH: neo4j/sink
+      NEO4J_dbms_memory_heap_max__size: 5G
+    #   NEO4J_kafka_max_poll_records: 16384
+    #   NEO4J_streams_source_enabled: "false"
+    #   NEO4J_streams_sink_topic_cdc_schema: "neo4j"
+      NEO4J_dbms_logs_debug_level: DEBUG
+    #   NEO4J_streams_sink_enabled: "true"
+
+  jobmanager:
+    build: ./flink-jobs
+    container_name: jobmanager
+    hostname: jobmanager
+    expose:
+      - 6123
+    ports:
+      - 8081:8081
+    command: /bin/sh -c '/docker-entrypoint.sh jobmanager
+                        & /opt/flink/bin/flink run /opt/flink/tweetfilter-0.1.jar
+                        & /opt/flink/bin/flink run /opt/flink/fanout-0.1.jar'
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    depends_on:
+      - kafka
+
+  taskmanager:
+    build: ./flink-jobs
+    container_name: taskmanager
+    hostname: taskmanager
+    expose:
+      - 6121
+      - 6122
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        parallelism.default: 2
+      # - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      # - FLINK_TASKMANAGER_NUMBEROFTASKSLOTS=2
+  memcached:
+    image: memcached
+    hostname: memcached
+    ports:
+      - 11211:11211

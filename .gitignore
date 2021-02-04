@@ -4,3 +4,7 @@
 .vscode/
 .settings/
 target/
+out/
+**/dependency-reduced-pom.xml
+**/neo4j-volume/
+**/neostore.transaction.db.0
