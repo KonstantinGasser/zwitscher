@@ -1,5 +1,5 @@
 # zwitscher
-This a 3 day project for our lecture in Big-Data Engeniering.
+This a 3 day project for our lecture in Big-Data Engineering.
 Idea of the project was it to come up with a solution which could handle heavy data read/write.
 Further the solution shoudld support the following: 
 - Some infrastructure supporting heavy read and write of data
