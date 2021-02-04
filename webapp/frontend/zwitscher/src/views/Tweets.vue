@@ -27,12 +27,9 @@ export default {
       tweets: []
     };
   },
-  props: {
-    id: String
-  },
   mounted() {
     axios
-      .get("http://192.168.0.232:7080/tweets?user_id="+this.id)
+      .get("http://192.168.0.232:7080/getmytweets?user_id="+this.$route.params.id)
       .then(response => this.tweets = response.data.content)
       .catch(error => console.log(error));
   }

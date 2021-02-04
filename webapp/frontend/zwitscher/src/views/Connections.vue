@@ -13,11 +13,11 @@
     <div class="columns">
       <div class="column">
         <h4 class="subtitle is-3">Following</h4>
-        <h4 class="subtitle is-3" v-for="id in following" :key="'x'+id"><router-link :to="'/tweets/'+tweet.user_id">@{{ id }}</router-link></h4>
+        <h4 class="subtitle is-3" v-for="id in following" :key="'x'+id"><router-link :to="'/tweets/'+id">@{{ id }}</router-link></h4>
       </div>
       <div class="column">
         <h4 class="subtitle is-3">Followers</h4>
-        <h4 class="subtitle is-3" v-for="id in followers" :key="'y'+id"><router-link :to="'/tweets/'+tweet.user_id">@{{ id }}</router-link></h4>
+        <h4 class="subtitle is-3" v-for="id in followers" :key="'y'+id"><router-link :to="'/tweets/'+id">@{{ id }}</router-link></h4>
       </div>
     </div> 
   </div>
@@ -38,10 +38,10 @@ export default {
   },
   mounted() {
     axios
-      .get("http:192.168.0.232:7080/getfollow?user_id="+this.$route.params.id)
+      .get("http://192.168.0.232:7080/getfollow?user_id="+this.$route.params.id)
       .then(response => {
-        this.following = response.data.following;
-        this.followers = response.data.followers;
+        this.following = response.data.content.following;
+        this.followers = response.data.content.followers;
       });
   }
 }

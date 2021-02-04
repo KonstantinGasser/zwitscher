@@ -89,14 +89,12 @@ public class StreamingJob {
 						return objNode;
 					}
 					objNode.put("content", value.get("content"));
-					return objNode;
-				}).map(value -> {
 					try {
-						value.get("user_id").textValue();
+						objNode.put("user_id", value.get("user_id").textValue());
 					} catch (Exception e) {
-						value.put("user_id", RandomId.get());
+						objNode.put("user_id", RandomId.get());
 					}
-					return value;
+					return objNode;
 				});
 
 		// serialize
