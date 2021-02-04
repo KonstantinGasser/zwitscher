@@ -32,7 +32,7 @@ export default {
   },
   mounted() {
     axios
-      .get("http://192.168.0.232:7080/dash?user_id="+this.id)
+      .get("http://192.168.0.232:7080/dash?user_id="+this.$route.params.id)
       .then(response => this.tweets = response.data.content)
       .catch(error => console.log(error));
   }
