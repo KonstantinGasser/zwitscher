@@ -1,25 +1,31 @@
 <template>
-  <Dashboard/>
+  <router-view/>
 </template>
 
-<script>
-import Dashboard from './components/Dashboard.vue'
-
-export default {
-  name: 'App',
-  components: {
-    Dashboard,
-  }
-}
-</script>
-
 <style>
+body {
+  background-color: #f6f8fa;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  height: 100vh;
+}
+
+#nav {
+  padding: 30px;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
 }
 </style>
