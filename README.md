@@ -1,10 +1,10 @@
 # zwitscher
 This a 3 day project for our lecture in Big-Data Engineering.
 Idea of the project was it to come up with a solution which could handle heavy data read/write.
-Further the solution shoudld support the following: 
+Further the solution shoudl support the following: 
 - Some infrastructure supporting heavy read and write of data
-- include streaming framework to do something
-- create personalized dashboard for user with tweets from followers
+- include streaming framework to do something fun with the data
+- create personalized dashboards for user with tweets from their followers
 - fetch tweets for user X
 - post new tweet
 
